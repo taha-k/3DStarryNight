@@ -22,6 +22,7 @@
         var container, stats;
         var camera, scene, renderer;
         var starSource = "data/stars.json";
+        var constellationSource = "data/constellations.json";
         var scale = 30;
 
         var windowHalfX = window.innerWidth / 2;
@@ -46,14 +47,11 @@
             httpRequest.onreadystatechange = function() {
                 if (httpRequest.readyState === 4) {
                     //parse JSON data
-                    //alert("checkppoint 1");
                     var stars = JSON.parse(httpRequest.responseText);
 
                     var colors = [];
                     var colorsh = [];
                     var lumsh = [];
-
-                    //alert("checkpoint 2");
 
                     stars.forEach(function(star, i) {
                         var pX = star.pos[0] * scaleFactor,
@@ -93,8 +91,65 @@
                     scene.add(particles);
                 }
             }
+
+            /*
+            * DRAW
+            * CONSTELLATION
+            * CODE
+            */
+
+            var mat = new THREE.LineBasicMaterial({
+                color: '#40e0d0'
+            });
+
+            var httpRequest2 = new XMLHttpRequest();
+            httpRequest2.onreadystatechange = function() {
+                if (httpRequest2.readyState === 4) {
+                    var data = JSON.parse(httpRequest2.responseText);
+                    console.log(data);
+                    data.forEach(function (c) {
+                        //
+                        var constellations = c.stars;
+                        var ppX = constellations[0][0].x * scaleFactor,
+                                ppY = constellations[0][0].y * scaleFactor,
+                                ppZ = constellations[0][0].z * scaleFactor;
+
+                        var pos = new THREE.Vector3( ppX, ppY, ppZ);
+
+                        var name = c.abbr;
+                        if (c.hasOwnProperty('name')) {
+                            name = c.name;
+                        }
+
+                        constellations.forEach(function (stars) {
+                            var geometry = new THREE.Geometry();
+                            stars.forEach(function (star) {
+                                geometry.vertices.push(
+                                        new THREE.Vector3(
+                                                star.x * scaleFactor,
+                                                star.y * scaleFactor,
+                                                star.z * scaleFactor));
+                                /*
+                                if (star.name === "Alpha Ori") {
+                                    alert("found oriion");
+                                camera.position.set(star.x * scaleFactor - 10,
+                                        star.y * scaleFactor,
+                                        0);
+                                }*/
+                            });
+                            var connection = new THREE.Line(geometry, mat);
+                            scene.add(connection);
+                        });
+                    });
+                    alert("constellations drawn");
+                }
+            }
+
             httpRequest.open("GET", starSource);
             httpRequest.send();
+
+            httpRequest2.open("GET", constellationSource);
+            httpRequest2.send();
 
             renderer = new THREE.WebGLRenderer();
             renderer.setClearColor( 0x000 ); // black background
