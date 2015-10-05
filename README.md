@@ -1,1 +1,1 @@
-#ThreeJS visualization for the cosmos
+#ThreeJS visualization for the cosmos and constellations
